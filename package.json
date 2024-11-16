@@ -1,0 +1,31 @@
+{
+  "name": "secret_santa_v2",
+  "version": "1.0.0",
+  "description": "Secret santa web version",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "dev": "node --env-file=.env --watch -r ts-node/register src/index.ts"
+  },
+  "engines": {
+    "node": ">=20.6.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/express-session": "^1.18.0",
+    "@types/node": "^22.9.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "express": "^4.21.1",
+    "express-session": "^1.18.1",
+    "nodemailer": "^6.9.16",
+    "secret_santa_v2": "file:"
+  }
+}

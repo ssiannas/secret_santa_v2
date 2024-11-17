@@ -1,7 +1,16 @@
 import express from 'express';
 import session from 'express-session';
 import path from 'path';
+var https = require('https');
+var http = require('http');
+var fs = require('fs');
+
 import { joinRoute, shuffleRoute, getParticipantsRoute, sseRoute, sessionStatusRoute, leaveRoute } from './routes';
+
+var options = {
+  key: fs.readFileSync(path.join(__dirname,'../keys/client-key.pem')),
+  cert: fs.readFileSync(path.join(__dirname,'../keys/client-cert.pem'))
+};
 
 const app = express();
 const PORT = 3000;
@@ -26,7 +35,5 @@ app.use('/events', sseRoute);
 app.use('/session-status', sessionStatusRoute);
 app.use('/leave', leaveRoute);
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-});
+http.createServer(app).listen(80);
+https.createServer(options, app).listen(443);

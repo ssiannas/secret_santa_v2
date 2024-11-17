@@ -68,7 +68,7 @@ button {
     align-items: center;
 }
 
-#participantList>div {
+#participants>div {
     background-color: #007bff;
     color: white;
     padding: 10px;
@@ -77,10 +77,6 @@ button {
     width: 100%;
     text-align: center;
     transition: background-color 0.3s ease;
-}
-
-#participantList li:hover {
-    background-color: #0056b3;
 }
 
 #errorMessage {

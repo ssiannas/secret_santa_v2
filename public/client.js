@@ -45,10 +45,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name })
       });
-      const data = await response.json();
+      const data = await response;
 
       if (response.ok) {
-        status.textContent = data.message;
         nameInput.style.display = 'none';
         joinButton.style.display = 'none';
         leaveButton.style.display = 'inline-block';
@@ -90,8 +89,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const eventSource = new EventSource('/events');
   eventSource.onmessage = (event) => {
-    const participants = JSON.parse(event.data);
+    const evtData = JSON.parse(event.data);
+    const participants = evtData.participants;
+    if (!participants) return;
+    
+    const isResult = evtData.shuffled;
+    const result = evtData.results;
+    const msg = evtData.message;
+
     participantList.innerHTML = participants.map(name => `<div>${name}</div>`).join('');
     participantDiv.style.display = 'block';
+
+    if (isResult) {
+      status.textContent = `You will give a gift to: ${result} ❤️`;
+    } else {
+      status.textContent = msg;
+    }
   };
 });

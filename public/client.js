@@ -3,7 +3,7 @@
   var audio = document.createElement("audio");
   audio.autoplay = true;
   audio.controls = true;
-  audio.volume = 0.01; // 0.1
+  audio.volume = 0.1; // 0.1
   //
   audio.load()
   audio.addEventListener("load", function() { 
@@ -191,6 +191,4 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // setInterval(animate, 15);
   animate()
-
-
 });

@@ -37,3 +37,4 @@ app.use('/leave', leaveRoute);
 
 http.createServer(app).listen(80);
 https.createServer(options, app).listen(443);
+console.log(`Server running on http://localhost`);

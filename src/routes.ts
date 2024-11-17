@@ -42,10 +42,12 @@ function getDataString(result: string = "", message: string = "") {
 }
 
 function notifyClients(message: string = '') {
-  clients.forEach(client => { 
-      var data = getDataString("", message);
-      client.res.write(data)
-    });
+  setTimeout(() => {
+    clients.forEach(client => { 
+        var data = getDataString("", message);
+        client.res.write(data)
+      })
+    }, 300);
 }
 
 // Join Route

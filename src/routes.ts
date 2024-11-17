@@ -1,7 +1,9 @@
 import express from 'express';
+import { shuffleParticipants } from './services/shuffle';
+import { env } from 'process';
 
 let participants: string[] = [];
-const MAX_PARTICIPANTS = 8;
+const MAX_PARTICIPANTS = Number(env.PARTICIPANTS);
 
 const joinRoute = express.Router();
 const shuffleRoute = express.Router();
@@ -10,8 +12,9 @@ const sseRoute = express.Router();
 const sessionStatusRoute = express.Router();
 const leaveRoute = express.Router();
 
-let clients: { id: number; res: express.Response }[] = [];
-let clientId = 0;
+let clients: { id: string; res: express.Response }[] = [];
+let clientNames: { id: string; name: string }[] = [];
+let results: { giver: string; receiver: string }[] = [];
 
 // SSE for real-time updates
 sseRoute.get('/', (req, res) => {
@@ -19,18 +22,30 @@ sseRoute.get('/', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
 
-  const newClient = { id: clientId++, res };
+  // could use uuid
+  const newClient = { id: req.sessionID, res };
   clients.push(newClient);
-  res.write(`data: ${JSON.stringify(participants)}\n\n`);
+  res.write(getDataString()); // Send initial data to the client
 
   req.on('close', () => {
     clients = clients.filter(client => client.id !== newClient.id);
   });
 });
 
-function notifyClients() {
-  const data = `data: ${JSON.stringify(participants)}\n\n`;
-  clients.forEach(client => client.res.write(data));
+function getDataString(result: string = "", message: string = "") {
+  return `data: ${JSON.stringify({
+    participants: participants,
+    shuffled: result !== "",
+    results: result,
+    message: message
+  })}\n\n`;
+}
+
+function notifyClients(message: string = '') {
+  clients.forEach(client => { 
+      var data = getDataString("", message);
+      client.res.write(data)
+    });
 }
 
 // Join Route
@@ -50,16 +65,33 @@ joinRoute.post('/', (req: any, res: any) => {
   }
 
   participants.push(name);
+  clientNames.push({ id: req.sessionID, name: name });
   req.session.joined = true;
   req.session.name = name;
-  
-  notifyClients();
-  res.status(200).send({ message: `${name} has joined!` });
+  var message = `${name} has joined! Waiting for `+ (MAX_PARTICIPANTS - participants.length) + ' more.';
+
+  if (participants.length === MAX_PARTICIPANTS) {
+    notifyResults();
+    res.status(200).send({ message: 'You will give a gift to: ' + results.find(p => p.giver === name)?.receiver  + '❤️'});
+  } else {
+    notifyClients(message); // Notify clients of the new participant
+    res.status(200).send();
+  }
 });
+
+function notifyResults() {
+  results = shuffleParticipants<string>(participants);
+  clients.forEach(client => {
+    var giver = clientNames.find(c => c.id === client.id)?.name || "";
+    var result = results.find(p => p.giver === giver)?.receiver || "";
+    var data = getDataString(result);
+    client.res.write(data);
+  });
+}
 
 leaveRoute.post('/', (req: any, res: any) => {
   if (!req.session.joined) {
-    return res.status(400).json({ message: 'You are not in the game.' });
+    return res.status(400).json({ message: 'You are not in.' });
   }
 
   const name = req.session.name;
@@ -70,7 +102,7 @@ leaveRoute.post('/', (req: any, res: any) => {
   req.session.name = '';
 
   notifyClients(); // Notify clients of the participant leaving
-  res.status(200).json({ message: `You have left the game, ${name}.` });
+  res.status(200).json({ message: `You have left the secret santa, ${name}.` });
 });
 
 

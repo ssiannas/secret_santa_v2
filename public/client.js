@@ -1,42 +1,49 @@
  //===================== audio
-  var source = "music/music.mp3"
-  var audio = document.createElement("audio");
-  audio.autoplay = true;
-  audio.controls = true;
-  audio.volume = 0.1; // 0.1
-  //
-  audio.load()
-  audio.addEventListener("load", function() { 
-      audio.play(); 
-  }, true);
-  audio.src = source;
-  document.body.appendChild(audio);
+var source = "music/music.mp3"
+var audio = document.createElement("audio");
+audio.autoplay = true;
+audio.controls = true;
+audio.volume = 0.1; // 0.1
+//
+audio.load()
+audio.addEventListener("load", function() { 
+    audio.play(); 
+}, true);
+audio.src = source;
+document.body.appendChild(audio);
 
+function updateParticipants(participants) {
+    const participantList = document.getElementById('participantList');
+    const participantElement = document.getElementById('participants');
+    participantElement.innerHTML = participants.map(name => `<div>${name}</div>`).join('');
+    participantList.style.display = 'block';
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
   const nameInput = document.getElementById('nameInput');
   const joinButton = document.getElementById('joinButton');
-  const participantList = document.getElementById('participants');
   const status = document.getElementById('status');
-  const participantDiv = document.getElementById('participantList');
   const errorMessage = document.getElementById('errorMessage'); // Error message div
+  const participantList = document.getElementById('participantList');
 
   // Clear error message
   const clearError = () => {
+    status.textContent = '';
     errorMessage.style.display = 'none';
     errorMessage.textContent = '';
   };
 
   try {
     const response = await fetch('/session-status');
-    const { alreadyJoined, name } = await response.json();
+    const { alreadyJoined, name, participants, maxParticipants } = await response.json();
 
     if (alreadyJoined) {
-      status.textContent = `Welcome back, ${name}!`;
+      status.textContent = `Welcome back, ${name}! Still waiting for ${maxParticipants - participants.length} more.`;
       nameInput.style.display = 'none';
       joinButton.style.display = 'none';
-      participantDiv.style.display = 'block';
+      participantList.style.display = 'block';
       leaveButton.style.display = 'inline-block';
+      updateParticipants(participants);
     }
   } catch (error) {
     console.error('Error checking session status:', error);
@@ -90,7 +97,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         nameInput.style.display = 'inline-block';
         joinButton.style.display = 'inline-block';
         leaveButton.style.display = 'none';
-        participantDiv.style.display = 'none';
+        participantList.style.display = 'none';
       } else {
         errorMessage.style.display = 'block';
         errorMessage.textContent = data.message || 'Error leaving!';
@@ -112,12 +119,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const result = evtData.results;
     const msg = evtData.message;
 
-    participantList.innerHTML = participants.map(name => `<div>${name}</div>`).join('');
-    participantDiv.style.display = 'block';
+    updateParticipants(participants);
 
     if (isResult) {
       status.textContent = `You will give a gift to: ${result} ❤️`;
-    } else {
+    } else if(msg !== ""){
       status.textContent = msg;
     }
   };

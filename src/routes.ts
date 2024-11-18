@@ -47,7 +47,7 @@ function notifyClients(message: string = '') {
         var data = getDataString("", message);
         client.res.write(data)
       })
-    }, 300);
+    }, 33);
 }
 
 // Join Route
@@ -77,7 +77,7 @@ joinRoute.post('/', (req: any, res: any) => {
     res.status(200).send({ message: 'You will give a gift to: ' + results.find(p => p.giver === name)?.receiver  + '❤️'});
   } else {
     notifyClients(message); // Notify clients of the new participant
-    res.status(200).send();
+    res.status(200).send(message);
   }
 });
 
@@ -111,7 +111,7 @@ leaveRoute.post('/', (req: any, res: any) => {
 // Session Status Route
 sessionStatusRoute.get('/', (req: any, res: any) => {
   if (req.session.joined) {
-    res.status(200).send({ alreadyJoined: true, name: req.session.name });
+    res.status(200).json({ alreadyJoined: true, name: req.session.name, participants: participants, maxParticipants : MAX_PARTICIPANTS });
   } else {
     res.status(200).send({ alreadyJoined: false });
   }

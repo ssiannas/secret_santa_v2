@@ -19,7 +19,7 @@ const PORT = 3000;
 app.use(express.json());
 app.use(session({
   secret: 'secret-santa-key',
-  resave: false,
+  resave: true,
   saveUninitialized: true,
   cookie: { secure: false } // Use `true` for HTTPS
 }));

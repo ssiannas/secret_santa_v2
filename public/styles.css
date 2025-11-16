@@ -33,7 +33,25 @@ h1 {
     color: white
 }
 
-#nameInput {
+.nameInput {
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 220px;
+    margin-bottom: 10px;
+}
+
+#roomInput {
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 220px;
+    margin-bottom: 10px;
+}
+
+#maxRoomParticipants {
     padding: 10px;
     font-size: 16px;
     border-radius: 5px;
@@ -60,6 +78,18 @@ button {
 
 #joinButton:hover {
     background-color: #218838;
+}
+
+#createRoomButton {
+    background-color: #ff2600;
+    color: white;
+    border: none;
+    margin-bottom: 10px;
+}
+
+
+#createRoomButton:hover {
+    background-color: #9c0000;
 }
 
 #leaveButton {

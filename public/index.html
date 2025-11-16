@@ -14,17 +14,21 @@
     <div id="status"></div>
     <div id="errorMessage" style="display: none;"></div>
 
+    <!-- Room creation -->
+    <input class="nameInput" type="text" id="nameInputCreate" placeholder="Enter your name">
+    <input type="number" min="2" max="10" id="maxRoomParticipants" placeholder="Max participants">
+    <button id="createRoomButton">Create Room</button>
+
+    <div>
+        <h2 style="color: white"> OR </h2>
+    </div>
+
     <!-- Participant Entry -->
-    <input type="text" id="nameInput" placeholder="Enter your name">
+    <input type="text" class="nameInput" id="nameInputJoin" placeholder="Enter your name">
     <button id="joinButton">Join</button>
     <button id="leaveButton" style="display: none;">Leave</button>
 
-    <!-- List of Participants -->
-    <div id="participantList" style="display: none;">
-        <div id="participants"></div>
-    </div>
-
-    <script src="/client.js"></script>
+    <script type="module" src="/client.js"></script>
 </body>
 
 </html>

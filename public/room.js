@@ -26,35 +26,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     errorMessage.textContent = '';
   };
 
-  try {
-    // Check if user has access to this room
-    const response = await fetch(`/session-status/${roomCode}`);
-    const data = await response.json();
-
-    if (!response.ok) {
-      // Room doesn't exist
-      alert('Room not found!');
-      window.location.href = '/';
-      return;
-    }
-
-    const { alreadyJoined, name, participants, maxParticipants } = data;
-
-    if (alreadyJoined) {
-      displayAsJoined(roomCode, name, participants, maxParticipants);
-    } else {
-      if (nameFromUrl && emailFromUrl) {
-        await joinRoom(nameFromUrl, emailFromUrl, roomCode);
-      } else {
-        alert('You must join the room first!');
-        window.location.href = '/';
-      }
-    }
-  } catch (error) {
-    console.error('Error:', error);
-    alert('Error verifying room access');
-    //window.location.href = '/';
-  }
 
   leaveButton.addEventListener('click', async () => {
     clearError();
@@ -85,6 +56,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const participants = evtData.participants;
     if (!participants) return;
 
+    console.log("Event received:", eventType, evtData);
+
     if (eventType === "joined" || eventType === "left") {
       updateParticipants(participants);
       status.textContent = evtData.message;
@@ -96,12 +69,46 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     updateParticipants(participants);
 
-    if (isResult) {
-      status.textContent = `You will give a gift to: ${result} ❤️`;
+    console.log("Received shuffle event:", evtData);
+    console.log("Result:", result);
+
+    if (result) {
+      status.textContent = result;
     } else if (msg !== "") {
       status.textContent = msg;
     }
   };
+
+  try {
+    // Check if user has access to this room
+    const response = await fetch(`/session-status/${roomCode}`);
+    const data = await response.json();
+
+    if (!response.ok) {
+      // Room doesn't exist
+      alert('Room not found!');
+      window.location.href = '/';
+      return;
+    }
+
+    const { alreadyJoined, name, participants, maxParticipants } = data;
+
+    if (alreadyJoined) {
+      displayAsJoined(roomCode, name, participants, maxParticipants);
+    } else {
+      if (nameFromUrl && emailFromUrl) {
+        await joinRoom(nameFromUrl, emailFromUrl, roomCode);
+      } else {
+        alert('You must join the room first!');
+        window.location.href = '/';
+      }
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Error verifying room access');
+    //window.location.href = '/';
+  }
+
 });
 
 function displayAsJoined(roomCode, name, participants, maxParticipants, firstTime = false) {

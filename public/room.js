@@ -89,9 +89,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const { alreadyJoined, name, participants, maxParticipants } = data;
 
     if (alreadyJoined) {
+      console.log(`User ${name} has already joined room ${roomCode}`);
       displayAsJoined(roomCode, name, participants, maxParticipants);
     } else {
       if (nameFromUrl && emailFromUrl) {
+        console.log(`User ${nameFromUrl} is joining room ${roomCode}`);
         await joinRoom(nameFromUrl, emailFromUrl, roomCode);
       } else {
         alert('You must join the room first!');

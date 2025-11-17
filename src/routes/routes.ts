@@ -120,13 +120,12 @@ sessionStatusRoute.get('/:roomId', (req: any, res: any) => {
 
   if (room.status === "shuffled") {
     return res.status(200).json({ alreadyJoined: userJoined, name: req.session.name, participants: participants, maxParticipants: maxParticipants, roomStatus: room.status });
-
   }
 
   if (userJoined) {
-    res.status(200).json({ alreadyJoined: true, name: req.session.name, participants: participants, maxParticipants: maxParticipants });
+    res.status(200).json({ alreadyJoined: true, name: req.session.name, participants: participants, maxParticipants: maxParticipants, roomStatus: room.status });
   } else {
-    res.status(200).json({ alreadyJoined: false, name: req.session.name, participants: participants, maxParticipants: maxParticipants });
+    res.status(200).json({ alreadyJoined: false, name: req.session.name, participants: participants, maxParticipants: maxParticipants, roomStatus: room.status });
   }
 });
 

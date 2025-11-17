@@ -85,6 +85,7 @@ leaveRoute.post('/', async (req: any, res: any) => {
   }
 
   const name = req.session.name;
+  const roomId = req.session.roomId;
 
   const room = RoomService.getRoom(req.session.roomId);
   // Clear session data
@@ -97,7 +98,7 @@ leaveRoute.post('/', async (req: any, res: any) => {
     return res.status(200).json({ message: `You have left the secret santa, ${name}. Note: The room has already been shuffled.` });
   }
 
-  NotificationService.notifyRoomLeave(req.sessionID, req.session.roomId, name);
+  NotificationService.notifyRoomLeave(req.sessionID, roomId, name);
   res.status(200).json({ message: `You have left the secret santa, ${name}.` });
 });
 

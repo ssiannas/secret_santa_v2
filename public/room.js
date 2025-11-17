@@ -93,6 +93,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     if (alreadyJoined) {
+      displayLeaveButton();
       displayAsJoined(roomCode, name, participants, maxParticipants);
     } else {
       if (nameFromUrl && emailFromUrl) {

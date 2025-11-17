@@ -50,7 +50,9 @@ class NotificationService {
 
     notifyOtherClients(excludeId: string, message: string = '', type: NotificationType = NotificationType.Joined, roomCode: string = '') {
         const room = RoomService.getRoom(roomCode);
-        if (!room) return;
+        if (!room) {
+            return;
+        }
         const roomClientSessions = room.participants.map(p => p.sessionId);
 
         setTimeout(() => {

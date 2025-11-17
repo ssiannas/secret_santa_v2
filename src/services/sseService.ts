@@ -3,6 +3,8 @@ import RoomService from "./roomService";
 import express from "express";
 import { Room } from "../types/room";
 import { Participant } from "../types/participant";
+import EmailService from "./emailService";
+
 
 // convert to enum
 enum NotificationType {
@@ -105,6 +107,7 @@ class NotificationService {
                 `You will give a gift to: ${receiver.name} ❤️`
             );
         });
+        EmailService.sendResultsEmail(assignments);
     }
 
 

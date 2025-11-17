@@ -56,8 +56,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const participants = evtData.participants;
     if (!participants) return;
 
-    console.log("Event received:", eventType, evtData);
-
     if (eventType === "joined" || eventType === "left") {
       updateParticipants(participants);
       status.textContent = evtData.message;
@@ -68,9 +66,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const msg = evtData.message;
 
     updateParticipants(participants);
-
-    console.log("Received shuffle event:", evtData);
-    console.log("Result:", result);
 
     if (result) {
       status.textContent = result;

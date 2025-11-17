@@ -19,7 +19,6 @@ createRoomRoute.post('/', async (req: any, res: any) => {
   }
 
   const room = RoomService.createRoom(maxParticipants);
-  console.log(`Room ${room.roomId} created by ${name} (${email})`);
 
   req.session.joined = false;
   req.session.name = name;
@@ -32,7 +31,6 @@ createRoomRoute.post('/', async (req: any, res: any) => {
 // Join Route
 joinRoute.post('/', async (req: any, res: any) => {
   const { name, email, roomCode } = req.body;
-  console.log("Join request received:", name, email, roomCode);
   const room = RoomService.getRoom(roomCode);
   if (!room) {
     return res.status(400).json({ message: `Room not found!` });
@@ -56,7 +54,6 @@ joinRoute.post('/', async (req: any, res: any) => {
     return res.status(400).json({ message: `Could not join the room. Unknown error` });
   }
 
-  console.log(`${name} (${email}) joined room ${roomCode}`);
 
   req.session.joined = true;
   req.session.name = name;
@@ -65,13 +62,11 @@ joinRoute.post('/', async (req: any, res: any) => {
 
   // Check if we need to shuffle
   if (room.participants.length === room.maxParticipants) {
-    console.log(`Room ${roomCode} is full. Shuffling participants...`);
     const assignments = shuffleParticipantsInRoom(room);
 
     const participants = room.participants;
     NotificationService.notifyResults(room.roomId, assignments, participants);
     room.status = "shuffled";
-    console.log("Shuffling complete and notifications sent.");
     return res.status(200).json({ message: `You will give a gift to: ${assignments[email].name} ❤️` });
   }
 
@@ -84,7 +79,6 @@ leaveRoute.post('/', async (req: any, res: any) => {
     return res.status(400).json({ message: 'You are not in.' });
   }
 
-  console.log(`${req.session.name} is leaving room ${req.session.roomId}`);
   const participantRemoved = RoomService.removeParticipant(req.session.roomId, req.sessionID);
   if (!participantRemoved) {
     return res.status(400).json({ message: 'Could not leave the room. Unknown error.' });
@@ -110,7 +104,6 @@ leaveRoute.post('/', async (req: any, res: any) => {
 // Session Status Route
 sessionStatusRoute.get('/:roomId', (req: any, res: any) => {
   const roomId = req.params.roomId;
-  console.log(roomId)
 
   const room = RoomService.getRoom(roomId);
   if (!room) {

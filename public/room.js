@@ -86,14 +86,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    const { alreadyJoined, name, participants, maxParticipants } = data;
+    const { alreadyJoined, name, participants, maxParticipants, roomStatus } = data;
+
+    if (roomStatus === "shuffled") {
+      return;
+    }
 
     if (alreadyJoined) {
-      console.log(`User ${name} has already joined room ${roomCode}`);
       displayAsJoined(roomCode, name, participants, maxParticipants);
     } else {
       if (nameFromUrl && emailFromUrl) {
-        console.log(`User ${nameFromUrl} is joining room ${roomCode}`);
         await joinRoom(nameFromUrl, emailFromUrl, roomCode);
       } else {
         alert('You must join the room first!');

@@ -16,13 +16,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const nameFromUrl = urlParams.get('name');
     const emailFromUrl = urlParams.get('email');
     const roomCode = urlParams.get('roomId');
+    const status = document.getElementById('status');
     const leaveButton = document.getElementById('leaveButton');
     
     try {
         // Check if user has access to this room
         const response = await fetch(`/session-status/${roomCode}`);
         const data = await response.json();
-
+        
         if (!response.ok) {
             // Room doesn't exist
             alert('Room not found!');
@@ -45,7 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
         console.error('Error:', error);
         alert('Error verifying room access');
-        window.location.href = '/';
+        //window.location.href = '/';
     }
 
 //     leaveButton.addEventListener('click', async () => {
@@ -73,40 +74,50 @@ document.addEventListener('DOMContentLoaded', async () => {
 //     }
 //   });
 
-//   const eventSource = new EventSource('/events');
-//   eventSource.onmessage = (event) => {
-//     const evtData = JSON.parse(event.data);
-//     const participants = evtData.participants;
-//     if (!participants) return;
+  const eventSource = new EventSource('/events');
+  eventSource.onmessage = (event) => {
+    const evtData = JSON.parse(event.data);
+    const eventType = evtData.event;
+
+    const participants = evtData.participants;
+    if (!participants) return;
     
-//     const isResult = evtData.shuffled;
-//     const result = evtData.results;
-//     const msg = evtData.message;
+    if (eventType === "joined" || eventType === "left") {
+        updateParticipants(participants);
+        status.textContent = evtData.message;
+        return;
+    }
 
-//     updateParticipants(participants);
+    const result = evtData.results;
+    const msg = evtData.message;
 
-//     if (isResult) {
-//       status.textContent = `You will give a gift to: ${result} ❤️`;
-//     } else if(msg !== ""){
-//       status.textContent = msg;
-//     }
-//   };
+    updateParticipants(participants);
+
+    if (isResult) {
+      status.textContent = `You will give a gift to: ${result} ❤️`;
+    } else if(msg !== ""){
+      status.textContent = msg;
+    }
+  };
 });
 
-function displayAsJoined(roomCode, name, participants, maxParticipants) {
+function displayAsJoined(roomCode, name, participants, maxParticipants, firstTime=false) {
     document.getElementById('roomCode').textContent = `Room Code: ${roomCode}`;
     
-    document.getElementById('status').textContent = 
+    if (firstTime) {
+        document.getElementById('status').textContent = `Welcome to the room, ${name}! Waiting for ${maxParticipants - participants.length} more participants to join.`;
+    } else {
+        document.getElementById('status').textContent = 
         `Welcome back, ${name}! Waiting for ${maxParticipants - participants.length} more.`;
-    
+    }
     document.getElementById('leaveButton').style.display = 'inline-block';
     document.getElementById('participantList').style.display = 'block';
     
     updateParticipants(participants);
 }
 
-async function joinRoom(name, email, roomCode) {
-    const response = await fetch(`/join/${roomCode}`, {
+async function joinRoom(name, email, roomCode, firstTime=false) {
+    const response = await fetch(`/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, roomCode })
@@ -115,9 +126,10 @@ async function joinRoom(name, email, roomCode) {
     const data = await response.json();
     
     if (response.ok) {
-        const statusResponse = await fetch(`/session-status/${roomCode}`);
-        const statusData = await statusResponse.json();
-        displayAsJoined(roomCode, name, statusData.participants, statusData.maxParticipants);
+        const roomStatus = await fetch(`/session-status/${roomCode}`);
+        const roomResponse = await roomStatus.json();
+
+        displayAsJoined(roomCode, name, roomResponse.participants, roomResponse.maxParticipants, firstTime=true);
     } else {
         alert(data.message);
         window.location.href = '/';

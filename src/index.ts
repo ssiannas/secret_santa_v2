@@ -5,11 +5,11 @@ var https = require('https');
 var http = require('http');
 var fs = require('fs');
 
-import { joinRoute, shuffleRoute, getParticipantsRoute, sseRoute, sessionStatusRoute, leaveRoute } from './routes';
+import { createRoomRoute, joinRoute, shuffleRoute, getParticipantsRoute, sseRoute, sessionStatusRoute, leaveRoute } from './routes';
 
 var options = {
-  key: fs.readFileSync(path.join(__dirname,'../keys/client-key.pem')),
-  cert: fs.readFileSync(path.join(__dirname,'../keys/client-cert.pem'))
+  key: fs.readFileSync(path.join(__dirname, '../keys/client-key.pem')),
+  cert: fs.readFileSync(path.join(__dirname, '../keys/client-cert.pem'))
 };
 
 const app = express();
@@ -34,6 +34,7 @@ app.use('/participants', getParticipantsRoute);
 app.use('/events', sseRoute);
 app.use('/session-status', sessionStatusRoute);
 app.use('/leave', leaveRoute);
+app.use('/create-room', createRoomRoute);
 
 http.createServer(app).listen(80);
 https.createServer(options, app).listen(443);

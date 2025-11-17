@@ -78,8 +78,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, roomCode })
       });
-      const data = await response.json();
 
+      const data = await response.json();
       if (response.ok) {
         window.location.href = `/room.html?roomId=${roomCode}`;
       } else {
@@ -100,20 +100,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const name = nameInput.value.trim();
+    const email = emailInput.value.trim();
     const maxParticipants = parseInt(maxParticipantsInput.value);
     clearError(); // Clear any previous errors
-
-
-
+    
     try {
       const response = await fetch('/create-room', {
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, maxParticipants })
+        body: JSON.stringify({ name, email, maxParticipants })
       });
       const data = await response.json();
       if (response.ok) {
-        window.location.href = `/room.html?roomId=${data.roomId}?name=${encodeURIComponent(name)}?email=${encodeURIComponent(email)}`;
+        window.location.href = `/room.html?roomId=${data.roomId}&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`;
       } else {
         errorMessage.style.display = 'block';
         errorMessage.textContent = data.message || 'Error creating room!';

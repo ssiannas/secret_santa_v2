@@ -15,20 +15,42 @@ audio.addEventListener("load", function() {
 audio.src = source;
 document.body.appendChild(audio);
 
-function updateParticipants(participants) {
-    const participantList = document.getElementById('participantList');
-    const participantElement = document.getElementById('participants');
-    participantElement.innerHTML = participants.map(name => `<div>${name}</div>`).join('');
-    participantList.style.display = 'block';
+function validateEmail(emailInput) { 
+  if (!emailInput.validity.valid) {
+    emailInput.reportValidity();  
+    return false;
+  }
+  return true;
 }
+
+function validateName(nameInput) {
+  if (nameInput.value.trim() === '') {
+    nameInput.setCustomValidity('Name cannot be empty');
+    nameInput.reportValidity();
+    return false;
+  }
+  return true;
+}
+
+function validateCommonInput(emailInput, nameInput) { 
+  return validateEmail(emailInput) &&
+         validateName(nameInput);
+}
+
 
 document.addEventListener('DOMContentLoaded', async () => {
   initSnowflakes();
   const nameInput = document.getElementById('nameInput');
-  const joinButton = document.getElementById('joinButton');
+  const roomId = document.getElementById('roomInput');
+  const emailInput = document.getElementById('emailInput');
+  const maxParticipantsInput = document.getElementById('maxRoomParticipants');
+  
   const status = document.getElementById('status');
-  const errorMessage = document.getElementById('errorMessage'); // Error message div
-  const participantList = document.getElementById('participantList');
+  const errorMessage = document.getElementById('errorMessage'); // 
+
+  // Forms
+  const joinRoomForm = document.getElementById('joinRoomForm');
+  const createRoomForm = document.getElementById('createRoomForm');
 
   // Clear error message
   const clearError = () => {
@@ -37,98 +59,69 @@ document.addEventListener('DOMContentLoaded', async () => {
     errorMessage.textContent = '';
   };
 
-  try {
-    const response = await fetch('/session-status');
-    const { alreadyJoined, name, participants, maxParticipants } = await response.json();
+  joinRoomForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-    if (alreadyJoined) {
-      status.textContent = `Welcome back, ${name}! Still waiting for ${maxParticipants - participants.length} more.`;
-      nameInput.style.display = 'none';
-      joinButton.style.display = 'none';
-      participantList.style.display = 'block';
-      leaveButton.style.display = 'inline-block';
-      updateParticipants(participants);
-    }
-  } catch (error) {
-    console.error('Error checking session status:', error);
-    errorMessage.style.display = 'block';
-    errorMessage.textContent = 'Unable to fetch session status. Please try again later.';
-  }
-
-  joinButton.addEventListener('click', async () => {
-    clearError(); // Clear any previous errors
-
-    const name = nameInput.value.trim();
-    if (!name) {
-      errorMessage.style.display = 'block';
-      errorMessage.textContent = 'Please enter your name!';
+    if (!validateCommonInput(emailInput, nameInput)) {
       return;
     }
+  
+    const name = nameInput.value.trim();
+    const email = emailInput.value.trim();
+    const roomCode = roomId.value.trim();
+  
+    clearError(); // Clear any previous errors
 
     try {
       const response = await fetch('/join', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name })
+        body: JSON.stringify({ name, email, roomCode })
       });
-      const data = await response;
-
-      if (response.ok) {
-        nameInput.style.display = 'none';
-        joinButton.style.display = 'none';
-        leaveButton.style.display = 'inline-block';
-      } else {
-        errorMessage.style.display = 'block';
-        errorMessage.textContent = data.message || 'Error joining!';
-      }
-    } catch (error) {
-      console.error('Error joining:', error);
-      errorMessage.style.display = 'block';
-      errorMessage.textContent = 'An unexpected error occurred. Please try again.';
-    }
-  });
-
-  leaveButton.addEventListener('click', async () => {
-    clearError();
-
-    try {
-      const response = await fetch('/leave', { method: 'POST' });
-
       const data = await response.json();
 
       if (response.ok) {
-        status.textContent = 'You have left';
-        nameInput.style.display = 'inline-block';
-        joinButton.style.display = 'inline-block';
-        leaveButton.style.display = 'none';
-        participantList.style.display = 'none';
+        window.location.href = `/room.html?roomId=${roomCode}`;
       } else {
         errorMessage.style.display = 'block';
-        errorMessage.textContent = data.message || 'Error leaving!';
+        errorMessage.textContent = data.message || 'Error joining room!';
       }
     } catch (error) {
-      console.error('Error leaving:', error);
+      console.error('Error joining room:', error);
       errorMessage.style.display = 'block';
-      errorMessage.textContent = 'An unexpected error occurred';
+      errorMessage.textContent = 'An unexpected error occurred while joining. Please try again.';
     }
   });
 
-  const eventSource = new EventSource('/events');
-  eventSource.onmessage = (event) => {
-    const evtData = JSON.parse(event.data);
-    const participants = evtData.participants;
-    if (!participants) return;
-    
-    const isResult = evtData.shuffled;
-    const result = evtData.results;
-    const msg = evtData.message;
-
-    updateParticipants(participants);
-
-    if (isResult) {
-      status.textContent = `You will give a gift to: ${result} ❤️`;
-    } else if(msg !== ""){
-      status.textContent = msg;
+  createRoomForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!validateCommonInput(emailInput, nameInput)) {
+      return;
     }
-  };
+
+    const name = nameInput.value.trim();
+    const maxParticipants = parseInt(maxParticipantsInput.value);
+    clearError(); // Clear any previous errors
+
+
+
+    try {
+      const response = await fetch('/create-room', {
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, maxParticipants })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        window.location.href = `/room.html?roomId=${data.roomId}?name=${encodeURIComponent(name)}?email=${encodeURIComponent(email)}`;
+      } else {
+        errorMessage.style.display = 'block';
+        errorMessage.textContent = data.message || 'Error creating room!';
+      }
+    } catch (error) {
+      console.error('Error creating room:', error);
+      errorMessage.style.display = 'block';
+      errorMessage.textContent = 'An unexpected error while creating the room. Please try again.';
+    }
+  });
 });

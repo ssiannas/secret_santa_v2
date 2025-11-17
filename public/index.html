@@ -14,19 +14,23 @@
     <div id="status"></div>
     <div id="errorMessage" style="display: none;"></div>
 
-    <!-- Room creation -->
-    <input class="nameInput" type="text" id="nameInputCreate" placeholder="Enter your name">
-    <input type="number" min="2" max="10" id="maxRoomParticipants" placeholder="Max participants">
-    <button id="createRoomButton">Create Room</button>
+    <h2 style="color: white">Your Details:</h2>
+    <input type="text" class="nameInput" id="nameInput" placeholder="Enter your name" required>
+    <input type="email" class="nameInput" id="emailInput" placeholder="Enter your email" required>
 
-    <div>
-        <h2 style="color: white"> OR </h2>
-    </div>
+    <!-- Create Room Form -->
+    <form id="createRoomForm">
+        <h2 style="color: white">Create a Room:</h2>
+        <input type="number" min="2" max="10" id="maxRoomParticipants" placeholder="Max participants" required>
+        <button type="submit" id="createRoomButton">Create Room</button>
+    </form>
 
-    <!-- Participant Entry -->
-    <input type="text" class="nameInput" id="nameInputJoin" placeholder="Enter your name">
-    <button id="joinButton">Join</button>
-    <button id="leaveButton" style="display: none;">Leave</button>
+    <!-- Join Room Form -->
+    <form id="joinRoomForm">
+        <h2 style="color: white">Join a Room:</h2>
+        <input class="nameInput" type="text" id="roomInput" placeholder="Enter Room Code" required>
+        <button type="submit" id="joinButton">Join Room</button>
+    </form>
 
     <script type="module" src="/client.js"></script>
 </body>

@@ -11,6 +11,7 @@ const getParticipantsRoute = express.Router();
 const sseRoute = express.Router();
 const sessionStatusRoute = express.Router();
 const leaveRoute = express.Router();
+const createRoomRoute = express.Router();
 
 let clients: { id: string; res: express.Response }[] = [];
 let clientNames: { id: string; name: string }[] = [];

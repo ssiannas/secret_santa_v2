@@ -1,0 +1,170 @@
+import { initSnowflakes } from "./scripts/snowflake.js";
+
+function updateParticipants(participants) {
+    const participantList = document.getElementById('participantList');
+    const participantElement = document.getElementById('participants');
+    participantElement.innerHTML = participants.map(name => `<div>${name}</div>`).join('');
+    participantList.style.display = 'block';
+}
+
+// TODO: Add error message to display instead of alert
+document.addEventListener('DOMContentLoaded', async () => {
+    initSnowflakes();
+
+    // Extract params from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const nameFromUrl = urlParams.get('name');
+    const emailFromUrl = urlParams.get('email');
+    const roomCode = urlParams.get('roomId');
+    const leaveButton = document.getElementById('leaveButton');
+    
+    try {
+        // Check if user has access to this room
+        const response = await fetch(`/session-status/${roomCode}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+            // Room doesn't exist
+            alert('Room not found!');
+            window.location.href = '/';
+            return;
+        }
+
+        const { alreadyJoined, name, participants, maxParticipants } = data;
+
+        if (alreadyJoined) {
+            displayAsJoined(roomCode, name, participants, maxParticipants);
+        } else {
+            if (nameFromUrl && emailFromUrl) {
+                await joinRoom(nameFromUrl, emailFromUrl, roomCode);
+            } else {
+                alert('You must join the room first!');
+                window.location.href = '/';
+            }
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error verifying room access');
+        window.location.href = '/';
+    }
+
+//     leaveButton.addEventListener('click', async () => {
+//     clearError();
+
+//     try {
+//       const response = await fetch('/leave', { method: 'POST' });
+
+//       const data = await response.json();
+
+//       if (response.ok) {
+//         status.textContent = 'You have left';
+//         nameInput.style.display = 'inline-block';
+//         joinButton.style.display = 'inline-block';
+//         leaveButton.style.display = 'none';
+//         participantList.style.display = 'none';
+//       } else {
+//         errorMessage.style.display = 'block';
+//         errorMessage.textContent = data.message || 'Error leaving!';
+//       }
+//     } catch (error) {
+//       console.error('Error leaving:', error);
+//       errorMessage.style.display = 'block';
+//       errorMessage.textContent = 'An unexpected error occurred';
+//     }
+//   });
+
+//   const eventSource = new EventSource('/events');
+//   eventSource.onmessage = (event) => {
+//     const evtData = JSON.parse(event.data);
+//     const participants = evtData.participants;
+//     if (!participants) return;
+    
+//     const isResult = evtData.shuffled;
+//     const result = evtData.results;
+//     const msg = evtData.message;
+
+//     updateParticipants(participants);
+
+//     if (isResult) {
+//       status.textContent = `You will give a gift to: ${result} ❤️`;
+//     } else if(msg !== ""){
+//       status.textContent = msg;
+//     }
+//   };
+});
+
+function displayAsJoined(roomCode, name, participants, maxParticipants) {
+    document.getElementById('roomCode').textContent = `Room Code: ${roomCode}`;
+    
+    document.getElementById('status').textContent = 
+        `Welcome back, ${name}! Waiting for ${maxParticipants - participants.length} more.`;
+    
+    document.getElementById('leaveButton').style.display = 'inline-block';
+    document.getElementById('participantList').style.display = 'block';
+    
+    updateParticipants(participants);
+}
+
+async function joinRoom(name, email, roomCode) {
+    const response = await fetch(`/join/${roomCode}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, roomCode })
+    });
+    
+    const data = await response.json();
+    
+    if (response.ok) {
+        const statusResponse = await fetch(`/session-status/${roomCode}`);
+        const statusData = await statusResponse.json();
+        displayAsJoined(roomCode, name, statusData.participants, statusData.maxParticipants);
+    } else {
+        alert(data.message);
+        window.location.href = '/';
+    }
+
+
+  leaveButton.addEventListener('click', async () => {
+    clearError();
+
+    try {
+      const response = await fetch('/leave', { method: 'POST' });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        status.textContent = 'You have left';
+        nameInput.style.display = 'inline-block';
+        joinButton.style.display = 'inline-block';
+        leaveButton.style.display = 'none';
+        participantList.style.display = 'none';
+      } else {
+        errorMessage.style.display = 'block';
+        errorMessage.textContent = data.message || 'Error leaving!';
+      }
+    } catch (error) {
+      console.error('Error leaving:', error);
+      errorMessage.style.display = 'block';
+      errorMessage.textContent = 'An unexpected error occurred';
+    }
+  });
+
+  const eventSource = new EventSource('/events');
+  eventSource.onmessage = (event) => {
+    const evtData = JSON.parse(event.data);
+    const participants = evtData.participants;
+    if (!participants) return;
+    
+    const isResult = evtData.shuffled;
+    const result = evtData.results;
+    const msg = evtData.message;
+
+    updateParticipants(participants);
+
+    if (isResult) {
+      status.textContent = `You will give a gift to: ${result} ❤️`;
+    } else if(msg !== ""){
+      status.textContent = msg;
+    }
+  };
+}

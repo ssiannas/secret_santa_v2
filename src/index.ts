@@ -5,7 +5,8 @@ var https = require('https');
 var http = require('http');
 var fs = require('fs');
 
-import { createRoomRoute, joinRoute, shuffleRoute, getParticipantsRoute, sseRoute, sessionStatusRoute, leaveRoute } from './routes';
+import { createRoomRoute, joinRoute, shuffleRoute, getParticipantsRoute, sessionStatusRoute, leaveRoute } from './routes/routes';
+import { sseRoute } from './routes/sseRouting';
 
 var options = {
   key: fs.readFileSync(path.join(__dirname, '../keys/client-key.pem')),

@@ -6,13 +6,13 @@ class RoomService {
 
     createRoom(maxParticipants: number): Room {
         const roomId = this.generateRoomId();
-        const room: Room = {
+        const room = new Room(
             roomId,
             maxParticipants,
-            participants: [],
-            createdAt: new Date(),
-            status: "waiting"
-        };
+            [],
+            new Date(),
+            "waiting"
+        );
         this.rooms.set(roomId, room);
         return room;
     }
@@ -27,6 +27,18 @@ class RoomService {
         if (room.participants.length >= room.maxParticipants) return false;
 
         room.participants.push(participant);
+        return true;
+    }
+
+    removeParticipant(roomId: string, sessionId: string): boolean {
+        const room = this.rooms.get(roomId);
+        if (!room) return false;
+        const index = room.participants.findIndex(p => p.sessionId === sessionId);
+        if (index === -1) return false;
+        room.participants.splice(index, 1);
+        if (room.participants.length === 0) {
+            this.rooms.delete(roomId);
+        }
         return true;
     }
 

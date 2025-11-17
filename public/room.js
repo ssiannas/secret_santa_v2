@@ -138,6 +138,9 @@ async function joinRoom(name, email, roomCode, firstTime = false) {
     const roomStatus = await fetch(`/session-status/${roomCode}`);
     const roomResponse = await roomStatus.json();
 
+    if (roomResponse.roomStatus === "shuffled") {
+      return;
+    }
     displayAsJoined(roomCode, name, roomResponse.participants, roomResponse.maxParticipants, firstTime = true);
   } else {
     alert(data.message);

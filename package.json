@@ -2,12 +2,11 @@
   "name": "secret_santa_v2",
   "version": "1.0.0",
   "description": "Secret santa web version",
-  "main": "index.js",
+  "main": "api/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
-    "dev": "concurrently \"tsc -w\" \"nodemon\"",
-    "prod": "npm run build && node --env-file=.env src/index.js"
+    "clean": "rm -rf api",
+    "build": "npm run clean && tsc",
+    "dev": "concurrently \"tsc -w\" \"nodemon src/index.ts\""
   },
   "engines": {
     "node": ">=20.6.0"

@@ -116,6 +116,8 @@ sessionStatusRoute.get('/:roomId', (req: any, res: any) => {
   const maxParticipants = room.maxParticipants;
   const participants = room.participants.map(p => p.name);
 
+  console.log(`User could be already joined: ${userJoined}`);
+
   if (room.status === "shuffled") {
     return res.status(200).json({ alreadyJoined: userJoined, name: req.session.name, participants: participants, maxParticipants: maxParticipants, roomStatus: room.status });
 

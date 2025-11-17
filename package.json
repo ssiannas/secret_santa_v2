@@ -2,11 +2,11 @@
   "name": "secret_santa_v2",
   "version": "1.0.0",
   "description": "Secret santa web version",
-  "main": "api/index.js",
+  "main": "api/server.js",
   "scripts": {
     "clean": "rm -rf api",
     "build": "npm run clean && tsc",
-    "dev": "concurrently \"tsc -w\" \"nodemon src/index.ts\""
+    "dev": "concurrently \"tsc -w\" \"nodemon src/server.ts\""
   },
   "engines": {
     "node": ">=20.6.0"

@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "dev": "node --env-file=.env --watch-path ./src --watch -r ts-node/register src/index.ts",
+    "dev": "concurrently \"tsc -w\" \"nodemon\"",
     "prod": "npm run build && node --env-file=.env src/index.js"
   },
   "engines": {
@@ -19,14 +19,17 @@
     "@types/express": "^5.0.0",
     "@types/express-session": "^1.18.0",
     "@types/node": "^22.9.0",
+    "concurrently": "^9.2.1",
+    "nodemon": "^3.1.11",
     "ts-node": "^10.9.2",
-    "typescript": "^5.6.3"
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "body-parser": "^1.20.3",
     "express": "^4.21.1",
     "express-session": "^1.18.1",
-    "nodemailer": "^6.9.16",
+    "nodemailer": "^7.0.10",
     "secret_santa_v2": "file:"
   }
 }

@@ -1,3 +1,4 @@
+import { Participant } from "../types/participant";
 import { Room } from "../types/room";
 
 export function shuffleParticipants<T>(arr: T[]): { giver: T; receiver: T }[] {
@@ -18,17 +19,17 @@ export function shuffleParticipants<T>(arr: T[]): { giver: T; receiver: T }[] {
   return result;
 }
 
-function shuffleParticipantsInRoom(room: Room): Record<string, string> {
+export function shuffleParticipantsInRoom(room: Room): Record<string, Participant> {
   const givers = [...room.participants];
   const receivers = [...room.participants];
-  const assignments: Record<string, string> = {};
+  const assignments: Record<string, Participant> = {};
 
   do {
     shuffleArray(receivers);
   } while (givers.some((p, i) => p.email === receivers[i].email));
 
   givers.forEach((p, i) => {
-    assignments[p.email] = receivers[i].email;
+    assignments[p.email] = receivers[i];
   });
 
   room.status = "shuffled";

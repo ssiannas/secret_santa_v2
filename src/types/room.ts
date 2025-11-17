@@ -16,7 +16,7 @@ export class Room implements IRoom {
         public maxParticipants: number,
         public participants: Participant[],
         public createdAt: Date,
-        public status: RoomStatus
+        public status: RoomStatus,
     ) { }
 
     getParticipantNames(): string[] {

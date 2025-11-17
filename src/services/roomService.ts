@@ -11,8 +11,7 @@ class RoomService {
             maxParticipants,
             [],
             new Date(),
-            "waiting"
-        );
+            "waiting");
         this.rooms.set(roomId, room);
         return room;
     }

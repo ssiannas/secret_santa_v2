@@ -2,6 +2,7 @@
 import RoomService from "./roomService";
 import express from "express";
 import { Room } from "../types/room";
+import { Participant } from "../types/participant";
 
 // convert to enum
 enum NotificationType {
@@ -11,14 +12,14 @@ enum NotificationType {
 }
 
 class NotificationService {
-    private clients: { id: string; res: express.Response }[] = [];
+    private clients: Map<string, express.Response> = new Map();
 
     addClient(client: { id: string; res: express.Response }) {
-        this.clients.push(client);
+        this.clients.set(client.id, client.res);
     }
 
     removeClient(clientId: string) {
-        this.clients = this.clients.filter(client => client.id !== clientId);
+        this.clients.delete(clientId);
     }
 
     getDataString(result: string = "", name: string = "", type: NotificationType = NotificationType.Joined, roomCode: string = ""): string {
@@ -34,11 +35,11 @@ class NotificationService {
 
     getMessageString(name: string, room: Room, type: NotificationType): string {
         switch (type) {
-            case "joined":
+            case NotificationType.Joined:
                 return this.getJoinMessageString(name, room);
-            case "left":
+            case NotificationType.Left:
                 return this.getLeaveMessageString(name, room);
-            case "shuffled":
+            case NotificationType.Shuffled:
                 return this.getResultMessageString();
             default:
                 return '';
@@ -46,22 +47,39 @@ class NotificationService {
     }
 
     notifyOtherClients(excludeId: string, message: string = '', type: NotificationType = NotificationType.Joined, roomCode: string = '') {
+        const room = RoomService.getRoom(roomCode);
+        if (!room) return;
+        const roomClientSessions = room.participants.map(p => p.sessionId);
+
         setTimeout(() => {
-            this.clients.forEach(client => {
-                if (client.id !== excludeId) {
+            roomClientSessions.forEach(sessionId => {
+                if (sessionId !== excludeId) {
                     var data = this.getDataString("", message, type, roomCode);
-                    client.res.write(data)
+                    this.clients.get(sessionId)?.write(data)
                 }
             })
         }, 32);
 
     }
 
-    notifyAllClients(message: string = '', type: NotificationType = NotificationType.Joined, roomCode: string = '') {
+    notifySingleClient(clientId: string, message: string = '', type: NotificationType = NotificationType.Joined, roomCode: string = '', result: string = '') {
         setTimeout(() => {
-            this.clients.forEach(client => {
+            if (this.clients.has(clientId)) {
+                var data = this.getDataString(result, message, type, roomCode);
+                this.clients.get(clientId)?.write(data);
+            }
+        }, 32);
+    }
+
+    notifyAllClients(message: string = '', type: NotificationType = NotificationType.Joined, roomCode: string = '') {
+        const room = RoomService.getRoom(roomCode);
+        if (!room) return;
+
+        const roomClientSessions = room.participants.map(p => p.sessionId);
+        setTimeout(() => {
+            roomClientSessions.forEach(sessionId => {
                 var data = this.getDataString("", message, type, roomCode);
-                client.res.write(data);
+                this.clients.get(sessionId)?.write(data);
             });
         }, 32);
     }
@@ -72,6 +90,21 @@ class NotificationService {
 
     notifyRoomLeave(excludeId: string, roomCode: string, name: string) {
         this.notifyOtherClients(excludeId, name, NotificationType.Left, roomCode);
+    }
+
+    notifyResults(roomCode: string, assignments: Record<string, Participant>, participants: Participant[]) {
+        let resultString = '';
+        participants.forEach(participant => {
+            const receiver = assignments[participant.email];
+            resultString += `${participant.name} → ${receiver.name}\n`;
+            this.notifySingleClient(
+                participant.sessionId,
+                "",
+                NotificationType.Shuffled,
+                roomCode,
+                `You will give a gift to: ${receiver.name} ❤️`
+            );
+        });
     }
 
 
@@ -85,6 +118,11 @@ class NotificationService {
         const maxParticipants = room?.maxParticipants || -1;
         const currentParticipants = room?.participants.length || -1;
         return `${name} has left the room. Waiting for ${maxParticipants - currentParticipants} more.`;
+    }
+
+    getResultsMessageString(assignments: Record<string, any>): string {
+        // check the session
+        return `The participants have been shuffled!`;
     }
 
     getResultMessageString(): string {

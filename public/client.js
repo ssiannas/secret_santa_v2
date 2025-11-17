@@ -1,7 +1,7 @@
- //===================== snow
- import { initSnowflakes } from "./scripts/snowflake.js";
+//===================== snow
+import { initSnowflakes } from "./scripts/snowflake.js";
 
- //===================== audio
+//===================== audio
 var source = "music/music.mp3"
 var audio = document.createElement("audio");
 audio.autoplay = true;
@@ -9,15 +9,15 @@ audio.controls = true;
 audio.volume = 0.1; // 0.1
 //
 audio.load()
-audio.addEventListener("load", function() { 
-    audio.play(); 
+audio.addEventListener("load", function () {
+  audio.play();
 }, true);
 audio.src = source;
 document.body.appendChild(audio);
 
-function validateEmail(emailInput) { 
+function validateEmail(emailInput) {
   if (!emailInput.validity.valid) {
-    emailInput.reportValidity();  
+    emailInput.reportValidity();
     return false;
   }
   return true;
@@ -32,11 +32,14 @@ function validateName(nameInput) {
   return true;
 }
 
-function validateCommonInput(emailInput, nameInput) { 
+function validateCommonInput(emailInput, nameInput) {
   return validateEmail(emailInput) &&
-         validateName(nameInput);
+    validateName(nameInput);
 }
 
+function getRoomURl(roomId, name, email) {
+  return `/room.html?roomId=${roomId}&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`;
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
   initSnowflakes();
@@ -44,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const roomId = document.getElementById('roomInput');
   const emailInput = document.getElementById('emailInput');
   const maxParticipantsInput = document.getElementById('maxRoomParticipants');
-  
+
   const status = document.getElementById('status');
   const errorMessage = document.getElementById('errorMessage'); // 
 
@@ -65,32 +68,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!validateCommonInput(emailInput, nameInput)) {
       return;
     }
-  
-    const name = nameInput.value.trim();
-    const email = emailInput.value.trim();
+
     const roomCode = roomId.value.trim();
-  
+
     clearError(); // Clear any previous errors
 
-    try {
-      const response = await fetch('/join', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, roomCode })
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        window.location.href = `/room.html?roomId=${roomCode}`;
-      } else {
-        errorMessage.style.display = 'block';
-        errorMessage.textContent = data.message || 'Error joining room!';
-      }
-    } catch (error) {
-      console.error('Error joining room:', error);
-      errorMessage.style.display = 'block';
-      errorMessage.textContent = 'An unexpected error occurred while joining. Please try again.';
-    }
+    window.location.href = getRoomURl(roomCode, nameInput.value.trim(), emailInput.value.trim());
   });
 
   createRoomForm.addEventListener('submit', async (e) => {
@@ -103,16 +86,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const email = emailInput.value.trim();
     const maxParticipants = parseInt(maxParticipantsInput.value);
     clearError(); // Clear any previous errors
-    
+
     try {
       const response = await fetch('/create-room', {
-        method: 'POST', 
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, maxParticipants })
       });
       const data = await response.json();
       if (response.ok) {
-        window.location.href = `/room.html?roomId=${data.roomId}&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`;
+        window.location.href = getRoomURl(data.roomId, name, email);
       } else {
         errorMessage.style.display = 'block';
         errorMessage.textContent = data.message || 'Error creating room!';

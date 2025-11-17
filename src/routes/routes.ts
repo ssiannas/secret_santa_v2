@@ -110,13 +110,10 @@ sessionStatusRoute.get('/:roomId', (req: any, res: any) => {
     return res.status(400).json({ message: 'Room not found!' });
   }
 
-
   // check if the user with the same session ID and emial is in the room
   const userJoined = room.participants.some(p => p.sessionId === req.sessionID && p.email === req.session.email);
   const maxParticipants = room.maxParticipants;
   const participants = room.participants.map(p => p.name);
-
-  console.log(`User could be already joined: ${userJoined}`);
 
   if (room.status === "shuffled") {
     return res.status(200).json({ alreadyJoined: userJoined, name: req.session.name, participants: participants, maxParticipants: maxParticipants, roomStatus: room.status });

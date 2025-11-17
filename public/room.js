@@ -110,6 +110,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 });
 
+function displayLeaveButton() {
+  document.getElementById('leaveButton').style.display = 'inline-block';
+}
+
 function displayAsJoined(roomCode, name, participants, maxParticipants, firstTime = false) {
   document.getElementById('roomCode').textContent = `Room Code: ${roomCode}`;
 
@@ -119,7 +123,6 @@ function displayAsJoined(roomCode, name, participants, maxParticipants, firstTim
     document.getElementById('status').textContent =
       `Welcome back, ${name}! Waiting for ${maxParticipants - participants.length} more.`;
   }
-  document.getElementById('leaveButton').style.display = 'inline-block';
   document.getElementById('participantList').style.display = 'block';
 
   updateParticipants(participants);
@@ -134,16 +137,17 @@ async function joinRoom(name, email, roomCode, firstTime = false) {
 
   const data = await response.json();
 
-  if (response.ok) {
-    const roomStatus = await fetch(`/session-status/${roomCode}`);
-    const roomResponse = await roomStatus.json();
-
-    if (roomResponse.roomStatus === "shuffled") {
-      return;
-    }
-    displayAsJoined(roomCode, name, roomResponse.participants, roomResponse.maxParticipants, firstTime = true);
-  } else {
+  if (!response.ok) {
     alert(data.message);
     window.location.href = '/';
+    return;
+  }
+
+  const roomStatus = await fetch(`/session-status/${roomCode}`);
+  const roomResponse = await roomStatus.json();
+  displayLeaveButton();
+
+  if (roomResponse.roomStatus !== "shuffled") {
+    displayAsJoined(roomCode, name, roomResponse.participants, roomResponse.maxParticipants, firstTime = true);
   }
 }

@@ -31,7 +31,7 @@ class RoomService {
     }
 
     generateRoomId(length = 6): string {
-        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // avoid confusing letters
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // avoid confusing characters
         let id: string;
 
         do {

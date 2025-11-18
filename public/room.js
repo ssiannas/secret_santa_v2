@@ -30,6 +30,7 @@ document.addEventListener("click", function () {
 // TODO: Add error message to display instead of 
 document.addEventListener('DOMContentLoaded', async () => {
   initSnowflakes();
+  initAudio();
 
   // Extract params from URL
   const urlParams = new URLSearchParams(window.location.search);

@@ -1,6 +1,8 @@
 import express from 'express';
 import session from 'express-session';
 import path from 'path';
+
+var favicon = require('serve-favicon');
 var https = require('https');
 var http = require('http');
 var fs = require('fs');
@@ -9,7 +11,10 @@ import { createRoomRoute, joinRoute, shuffleRoute, getParticipantsRoute, session
 import { sseRoute } from './routes/sseRouting';
 
 const app = express();
-const PORT = 3000;
+
+// Serve static files
+app.use(favicon(path.join(__dirname, '../public/img', 'favicon.ico')));
+app.use(express.static(path.join(__dirname, '../public')));
 
 // Middleware
 app.use(express.json());
@@ -20,8 +25,7 @@ app.use(session({
   cookie: { secure: false } // Use `true` for HTTPS
 }));
 
-// Serve static files
-app.use(express.static(path.join(__dirname, '../public')));
+
 
 // Routes
 app.use('/join', joinRoute);

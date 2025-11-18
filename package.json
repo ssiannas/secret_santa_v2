@@ -26,11 +26,10 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "body-parser": "^1.20.3",
     "dotenv": "^17.2.3",
     "express": "^4.21.1",
     "express-session": "^1.18.1",
-    "nodemailer": "^7.0.10",
+    "resend": "^6.5.0",
     "secret_santa_v2": "file:",
     "serve-favicon": "^2.5.1"
   }

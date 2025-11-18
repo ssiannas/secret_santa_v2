@@ -1,37 +1,28 @@
 import { Participant } from "../types/participant";
+import { Resend } from "resend";
 
-const nodemailer = require('nodemailer');
 require('dotenv').config();
 
 class EmailService {
-    private transporter: any;
-    private testaccount: any;
+    private resend: any;
 
     constructor() {
         this.init();
     }
 
     async init() {
-        this.transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS,
-            },
-        });
+        this.resend = new Resend(process.env.RESEND_API_KEY!);
     }
 
-    private async sendEmail(to: string, subject: string, text: string, html?: string) {
+    private async sendEmail(to: string, subject: string, html?: string) {
         const mailOptions = {
-            from: `Secret Santa Burner <${process.env.EMAIL_USER}>`,
-            to,
-            subject,
-            text,
-            html,
+            from: `Mr. Secret Santa <secretsanta@siannas.xyz>`,
+            to: [to],
+            subject: subject,
+            html: html || '',
         };
         try {
-            await this.transporter.sendMail(mailOptions);
-            console.log(`Email sent to ${to}`);
+            const data = await this.resend.emails.send(mailOptions);
         } catch (error) {
             console.error(`Error sending email to ${to}:`, error);
         }
@@ -42,12 +33,8 @@ class EmailService {
         for (const giverEmail in assignments) {
             const receiver = assignments[giverEmail];
             const subject = 'Your Secret Santa Assignment!';
-            const text = `Hello!
-You have been chosen as the Secret Santa for: ${receiver.name}!
-Happy gifting! 🎁
-            `;
             const html = `<p>Hello! You have been chosen as the Secret Santa for: <strong>${receiver.name}</strong>!<br/>Happy gifting! 🎁</p>`;
-            await this.sendEmail(giverEmail, subject, text, html);
+            await this.sendEmail(giverEmail, subject, html);
         }
     }
 }

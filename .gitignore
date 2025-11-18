@@ -135,5 +135,6 @@ dist
 **/api/**
 
 **/.env
+.env
 **/keys/**
 

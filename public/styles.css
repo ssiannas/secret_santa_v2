@@ -1,12 +1,16 @@
+* {
+    box-sizing: border-box;
+}
+
 body {
     font-family: Arial, sans-serif;
     margin: 0;
-    padding: 0;
+    padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100vh;
+    min-height: 100vh;
     background-color: #f0f0f0;
     background-image: url("img/bg.png");
     background-attachment: fixed;
@@ -33,30 +37,29 @@ h1 {
     color: white
 }
 
-.nameInput {
-    padding: 10px;
-    font-size: 16px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    width: 220px;
-    margin-bottom: 10px;
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 300px;
+    margin: 15px 0;
 }
 
-#roomInput {
-    padding: 10px;
-    font-size: 16px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    width: 220px;
-    margin-bottom: 10px;
+form h2 {
+    margin: 10px 0;
+    width: 100%;
 }
 
+.nameInput,
+#roomInput,
 #maxRoomParticipants {
     padding: 10px;
     font-size: 16px;
     border-radius: 5px;
     border: 1px solid #ccc;
-    width: 220px;
+    width: 100%;
+    max-width: 250px;
     margin-bottom: 10px;
 }
 
@@ -65,7 +68,8 @@ button {
     font-size: 16px;
     border-radius: 5px;
     cursor: pointer;
-    width: 220px;
+    width: 100%;
+    max-width: 250px;
     margin-top: 10px;
     transition: background-color 0.3s ease;
 }
@@ -96,7 +100,9 @@ button {
     background-color: #dc3545;
     color: white;
     border: none;
-    display: flex;
+    width: 100%;
+    max-width: 250px;
+    margin-top: 20px;
 }
 
 #leaveButton:hover {
@@ -106,6 +112,15 @@ button {
 #participantList {
     padding: 0;
     margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 300px;
+}
+
+#participants {
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -138,4 +153,31 @@ button {
 audio {
     position: absolute;
     bottom: 70px;
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 24px;
+        margin: 15px 0;
+    }
+
+    .nameInput,
+    #roomInput,
+    #maxRoomParticipants,
+    button {
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    form {
+        margin: 10px 0;
+    }
+
+    #participantList {
+        margin-top: 15px;
+    }
 }

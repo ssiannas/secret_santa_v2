@@ -16,7 +16,7 @@ class EmailService {
 
     private async sendEmail(to: string, subject: string, html?: string) {
         const mailOptions = {
-            from: `Mr. Secret Santa <secretsanta@siannas.xyz>`,
+            from: `Mr. Secret Santa <${process.env.EMAIL_FROM}>`,
             to: [to],
             subject: subject,
             html: html || '',

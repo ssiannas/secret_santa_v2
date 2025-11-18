@@ -133,3 +133,7 @@ dist
 **/.vscode/**
 
 **/api/**
+
+**/.env
+**/keys/**
+

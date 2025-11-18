@@ -8,11 +8,6 @@ var fs = require('fs');
 import { createRoomRoute, joinRoute, shuffleRoute, getParticipantsRoute, sessionStatusRoute, leaveRoute } from './routes/routes';
 import { sseRoute } from './routes/sseRouting';
 
-var options = {
-  key: fs.readFileSync(path.join(__dirname, '../keys/client-key.pem')),
-  cert: fs.readFileSync(path.join(__dirname, '../keys/client-cert.pem'))
-};
-
 const app = express();
 const PORT = 3000;
 
@@ -38,5 +33,5 @@ app.use('/leave', leaveRoute);
 app.use('/create-room', createRoomRoute);
 
 http.createServer(app).listen(80);
-https.createServer(options, app).listen(443);
+https.createServer(app).listen(443);
 console.log(`Server running on http://localhost`);

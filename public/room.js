@@ -1,4 +1,5 @@
 import { initSnowflakes } from "./scripts/snowflake.js";
+import { initAudio, playAudio, stopAudio } from "./scripts/audio.js";
 
 function updateParticipants(participants) {
   const participantList = document.getElementById('participantList');
@@ -6,6 +7,25 @@ function updateParticipants(participants) {
   participantElement.innerHTML = participants.map(name => `<div>${name}</div>`).join('');
   participantList.style.display = 'block';
 }
+
+//===================== audio handling
+document.addEventListener("visibilitychange", function () {
+  if (document.hidden) {
+    // User locked screen or switched tabs - stop audio
+    stopAudio();
+  } else {
+    // User came back - resume if it was playing
+    if (localStorage.getItem("musicPlaying") !== "false") {
+      playAudio();
+    }
+  }
+});
+
+document.addEventListener("click", function () {
+  if (audioContext.state === "suspended") {
+    audioContext.resume();
+  }
+}, { once: true });
 
 // TODO: Add error message to display instead of 
 document.addEventListener('DOMContentLoaded', async () => {

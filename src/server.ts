@@ -12,9 +12,6 @@ import { sseRoute } from './routes/sseRouting';
 
 const app = express();
 
-app.use(compression());
-app.use(express.static(path.join(__dirname, '../public'), { maxAge: '1y', etag: false }));
-
 // Middleware
 app.use(express.json());
 app.use(session({
@@ -37,6 +34,9 @@ app.use('/events', sseRoute);
 app.use('/session-status', sessionStatusRoute);
 app.use('/leave', leaveRoute);
 app.use('/create-room', createRoomRoute);
+
+app.use(compression());
+app.use(express.static(path.join(__dirname, '../public'), { maxAge: '1y', etag: false }));
 
 http.createServer(app).listen(80);
 https.createServer(app).listen(443);

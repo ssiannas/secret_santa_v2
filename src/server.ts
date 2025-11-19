@@ -2,17 +2,18 @@ import express from 'express';
 import session from 'express-session';
 import path from 'path';
 
-var favicon = require('serve-favicon');
+
 var https = require('https');
 var http = require('http');
-var fs = require('fs');
+var compression = require('compression');
 
 import { createRoomRoute, joinRoute, shuffleRoute, getParticipantsRoute, sessionStatusRoute, leaveRoute } from './routes/routes';
 import { sseRoute } from './routes/sseRouting';
 
 const app = express();
 
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(compression());
+app.use(express.static(path.join(__dirname, '../public'), { maxAge: '1y', etag: false }));
 
 // Middleware
 app.use(express.json());

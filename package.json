@@ -26,11 +26,11 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "compression": "^1.8.1",
     "dotenv": "^17.2.3",
     "express": "^4.21.1",
     "express-session": "^1.18.1",
     "resend": "^6.5.0",
-    "secret_santa_v2": "file:",
-    "serve-favicon": "^2.5.1"
+    "secret_santa_v2": "file:"
   }
 }

@@ -8,6 +8,34 @@ function updateParticipants(participants) {
   participantList.style.display = 'block';
 }
 
+
+const status = document.getElementById('status');
+// Setup SSE connection
+const eventSource = new EventSource('/events');
+function handleRoomUpdate(event) {
+  const evtData = JSON.parse(event.data);
+  const participants = evtData.participants;
+  if (participants) {
+    updateParticipants(participants);
+    status.textContent = evtData.message;
+  }
+}
+
+function handleResults(event) {
+  const evtData = JSON.parse(event.data);
+  console.log('Shuffled event data:', evtData);  // Debug
+
+  const participants = evtData.participants;
+  if (participants) {
+    updateParticipants(participants);
+  }
+  status.textContent = evtData.results || evtData.message || 'The room has been shuffled! You will receive an email with your assignment soon.';
+}
+
+eventSource.addEventListener('joined', handleRoomUpdate);
+eventSource.addEventListener('left', handleRoomUpdate);
+eventSource.addEventListener('shuffled', handleResults);
+
 //===================== audio handling
 document.addEventListener("visibilitychange", function () {
   if (document.hidden) {
@@ -37,7 +65,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const nameFromUrl = urlParams.get('name');
   const emailFromUrl = urlParams.get('email');
   const roomCode = urlParams.get('roomId');
-  const status = document.getElementById('status');
   const leaveButton = document.getElementById('leaveButton');
   const errorMessage = document.getElementById('errorMessage');
 
@@ -47,7 +74,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     errorMessage.textContent = '';
   };
 
-
+  // Leave room button handler
   leaveButton.addEventListener('click', async () => {
     clearError();
 
@@ -69,32 +96,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  const eventSource = new EventSource('/events');
-  eventSource.onmessage = (event) => {
-    const evtData = JSON.parse(event.data);
-    const eventType = evtData.event;
 
-    const participants = evtData.participants;
-    if (!participants) return;
-
-    if (eventType === "joined" || eventType === "left") {
-      updateParticipants(participants);
-      status.textContent = evtData.message;
-      return;
-    }
-
-    const result = evtData.results;
-    const msg = evtData.message;
-
-    updateParticipants(participants);
-
-    if (result) {
-      status.textContent = result;
-    } else if (msg !== "") {
-      status.textContent = msg;
-    }
-  };
-
+  // On page load, verify if user has access to this room
   try {
     // Check if user has access to this room
     const response = await fetch(`/session-status/${roomCode}`);
@@ -110,6 +113,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const { alreadyJoined, name, participants, maxParticipants, roomStatus } = data;
 
     if (roomStatus === "shuffled") {
+      updateParticipants(participants);
       return;
     }
 
@@ -127,7 +131,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (error) {
     console.error('Error:', error);
     alert('Error verifying room access');
-    //window.location.href = '/';
+    window.location.href = '/';
   }
 
 });
@@ -171,5 +175,12 @@ async function joinRoom(name, email, roomCode, firstTime = false) {
 
   if (roomResponse.roomStatus !== "shuffled") {
     displayAsJoined(roomCode, name, roomResponse.participants, roomResponse.maxParticipants, firstTime = true);
+  } else {
+    updateParticipants(roomResponse.participants);
   }
 }
+
+// Cleanup SSE on page unload
+window.addEventListener('beforeunload', () => {
+  eventSource.close();
+});

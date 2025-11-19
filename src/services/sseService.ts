@@ -1,4 +1,3 @@
-// lets refactor the code from the routing file to a notification service class
 import RoomService from "./roomService";
 import express from "express";
 import { Room } from "../types/room";
@@ -15,24 +14,79 @@ enum NotificationType {
 
 class NotificationService {
     private clients: Map<string, express.Response> = new Map();
+    private heartbeatIntervals: Map<string, NodeJS.Timeout> = new Map();
 
     addClient(client: { id: string; res: express.Response }) {
+        const existingClient = this.clients.get(client.id);
+        if (existingClient) {
+            existingClient.end();
+        }
+
         this.clients.set(client.id, client.res);
+
+        // Handle client disconnect
+        client.res.on('close', () => {
+            this.removeClient(client.id);
+        });
+
+        client.res.on('error', (error) => {
+            console.error(`Client ${client.id} error:`, error);
+            this.removeClient(client.id);
+        });
+
+        // Send initial comment to establish connection
+        client.res.write(':connected\n\n');
+        this.startHeartbeat(client.id, client.res);
     }
 
     removeClient(clientId: string) {
         this.clients.delete(clientId);
+
+        const interval = this.heartbeatIntervals.get(clientId);
+        if (interval) {
+            clearInterval(interval);
+            this.heartbeatIntervals.delete(clientId);
+        }
+    }
+
+    private writeToClient(clientId: string, data: string): boolean {
+        try {
+            const res = this.clients.get(clientId);
+            if (!res) {
+                return false;
+            }
+            res.write(data);
+            return true;
+        } catch (error) {
+            console.error(`Failed to write to client ${clientId}:`, error);
+            this.removeClient(clientId);
+            return false;
+        }
+    }
+
+    private startHeartbeat(clientId: string, res: express.Response) {
+        const interval = setInterval(() => {
+            try {
+                res.write(':heartbeat\n\n');
+            } catch (error) {
+                console.error(`Failed to send heartbeat to ${clientId}:`, error);
+                this.removeClient(clientId);
+            }
+        }, 10000); // Every 10 seconds
+
+        this.heartbeatIntervals.set(clientId, interval);
     }
 
     getDataString(result: string = "", name: string = "", type: NotificationType = NotificationType.Joined, roomCode: string = ""): string {
         const room = RoomService.getRoom(roomCode);
         if (!room) return 'Room not found';
-        return `data: ${JSON.stringify({
+        const eventData = JSON.stringify({
             participants: room?.getParticipantNames() || [],
             results: result,
             message: this.getMessageString(name, room, type),
             event: type
-        })}\n\n`;
+        });
+        return `event: ${type}\ndata: ${eventData}\n\n`;
     }
 
     getMessageString(name: string, room: Room, type: NotificationType): string {
@@ -50,29 +104,20 @@ class NotificationService {
 
     notifyOtherClients(excludeId: string, message: string = '', type: NotificationType = NotificationType.Joined, roomCode: string = '') {
         const room = RoomService.getRoom(roomCode);
-        if (!room) {
-            return;
-        }
+        if (!room) return;
+
         const roomClientSessions = room.participants.map(p => p.sessionId);
-
-        setTimeout(() => {
-            roomClientSessions.forEach(sessionId => {
-                if (sessionId !== excludeId) {
-                    var data = this.getDataString("", message, type, roomCode);
-                    this.clients.get(sessionId)?.write(data)
-                }
-            })
-        }, 32);
-
+        roomClientSessions.forEach(sessionId => {
+            if (sessionId !== excludeId) {
+                const data = this.getDataString("", message, type, roomCode);
+                this.writeToClient(sessionId, data);
+            }
+        });
     }
 
     notifySingleClient(clientId: string, message: string = '', type: NotificationType = NotificationType.Joined, roomCode: string = '', result: string = '') {
-        setTimeout(() => {
-            if (this.clients.has(clientId)) {
-                var data = this.getDataString(result, message, type, roomCode);
-                this.clients.get(clientId)?.write(data);
-            }
-        }, 32);
+        const data = this.getDataString(result, message, type, roomCode);
+        this.writeToClient(clientId, data);
     }
 
     notifyAllClients(message: string = '', type: NotificationType = NotificationType.Joined, roomCode: string = '') {
@@ -80,12 +125,10 @@ class NotificationService {
         if (!room) return;
 
         const roomClientSessions = room.participants.map(p => p.sessionId);
-        setTimeout(() => {
-            roomClientSessions.forEach(sessionId => {
-                var data = this.getDataString("", message, type, roomCode);
-                this.clients.get(sessionId)?.write(data);
-            });
-        }, 32);
+        roomClientSessions.forEach(sessionId => {
+            const data = this.getDataString("", message, type, roomCode);
+            this.writeToClient(sessionId, data);
+        });
     }
 
     notifyRoomJoin(excludeId: string, roomCode: string, name: string) {
@@ -111,7 +154,6 @@ class NotificationService {
         });
         EmailService.sendResultsEmail(assignments);
     }
-
 
     getJoinMessageString(name: string, room: Room): string {
         const maxParticipants = room?.maxParticipants || -1;

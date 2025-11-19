@@ -65,8 +65,8 @@ joinRoute.post('/', async (req: any, res: any) => {
     const assignments = shuffleParticipantsInRoom(room);
 
     const participants = room.participants;
-    NotificationService.notifyResults(room.roomId, assignments, participants);
     room.status = "shuffled";
+    NotificationService.notifyResults(room.roomId, assignments, participants);
     return res.status(200).json({ message: `You will give a gift to: ${assignments[email].name} ❤️` });
   }
 

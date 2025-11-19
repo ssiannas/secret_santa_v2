@@ -12,8 +12,6 @@ import { sseRoute } from './routes/sseRouting';
 
 const app = express();
 
-// Serve static files
-app.use(favicon(path.join(__dirname, '../public/img', 'favicon.ico')));
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Middleware
@@ -25,7 +23,10 @@ app.use(session({
   cookie: { secure: false } // Use `true` for HTTPS
 }));
 
-
+app.get('/favicon.ico', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+  res.sendFile(path.join(__dirname, '../public/img', 'favicon.ico'));
+});
 
 // Routes
 app.use('/join', joinRoute);
